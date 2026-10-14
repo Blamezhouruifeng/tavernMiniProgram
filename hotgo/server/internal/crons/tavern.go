@@ -8,6 +8,7 @@ import (
 
 	"hotgo/internal/dao"
 	"hotgo/internal/library/cron"
+	tavernrestore "hotgo/internal/logic/tavern"
 )
 
 func init() {
@@ -49,6 +50,12 @@ func (c *cTavernOrderExpire) Execute(ctx context.Context, parser *cron.Parser) (
 			parser.Logger.Warning(ctx, "TavernOrderExpire update err:%+v", err)
 			return
 		}
+
+		// 回滚提交订单时预占的库存（幂等）
+		if err = tavernrestore.RestoreStockByOrder(ctx, orderId); err != nil {
+			parser.Logger.Warning(ctx, "TavernOrderExpire restore stock err:%+v", err)
+		}
+
 		parser.Logger.Infof(ctx, "待支付订单已超时取消 orderNo:%s", row[orderCols.OrderNo].String())
 	}
 	return

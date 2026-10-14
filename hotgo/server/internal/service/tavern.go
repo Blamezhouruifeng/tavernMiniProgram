@@ -131,6 +131,13 @@ type (
 		BottleList(ctx context.Context, in *tavernin.AdminBottleListInp) (list []*tavernin.BottleModel, totalCount int, err error)
 		// BottleUpdate 存酒维护（延期/报损/改储位）
 		BottleUpdate(ctx context.Context, in *tavernin.AdminBottleUpdateInp) (err error)
+
+		// AbnormalOrders 异常订单（支付成功未出票 / 退款待审 / 超时未取消）
+		AbnormalOrders(ctx context.Context) (list []*tavernin.AdminAbnormalOrderModel, err error)
+		// Reissue 手动补出票（先付制：客人已付款但未进入制作时使用）
+		Reissue(ctx context.Context, in *tavernin.AdminReissueInp) (err error)
+		// Reconcile 支付对账（订单 ↔ 支付流水）
+		Reconcile(ctx context.Context, in *tavernin.AdminReconcileInp) (res *tavernin.AdminReconcileModel, err error)
 	}
 
 	// ITavernStaff 员工工作台

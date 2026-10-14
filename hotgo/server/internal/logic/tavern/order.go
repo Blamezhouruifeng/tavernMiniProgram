@@ -100,6 +100,12 @@ func (s *sTavernOrder) Submit(ctx context.Context, in *tavernin.OrderSubmitInp) 
 		}
 
 		qty := row[cartCols.Qty].Int()
+
+		// 行级预占库存（限量规格）：扣不到即报该行缺货，避免超卖
+		if err = deductStock(ctx, skuId, qty); err != nil {
+			return nil, err
+		}
+
 		price := sku[skuCols.Price].Float64()
 		total += price * float64(qty)
 		lines = append(lines, &line{

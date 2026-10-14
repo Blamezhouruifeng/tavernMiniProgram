@@ -157,6 +157,32 @@ type OrderListRes struct {
 	List []*tavernin.AdminOrderModel `json:"list"`
 }
 
+/* ---------------- 异常订单与对账 ---------------- */
+
+type OrderAbnormalReq struct {
+	g.Meta `path:"/tavern/order/abnormal" method:"get" tags:"酒馆-订单" summary:"异常订单（支付未出票/退款待审/超时未取消）"`
+}
+
+type OrderAbnormalRes struct {
+	List []*tavernin.AdminAbnormalOrderModel `json:"list"`
+}
+
+type OrderReissueReq struct {
+	g.Meta `path:"/tavern/order/reissue" method:"post" tags:"酒馆-订单" summary:"手动补出票"`
+	tavernin.AdminReissueInp
+}
+
+type OrderReissueRes struct{}
+
+type ReconcileReq struct {
+	g.Meta `path:"/tavern/reconcile/list" method:"get" tags:"酒馆-对账" summary:"支付对账（订单↔流水）"`
+	tavernin.AdminReconcileInp
+}
+
+type ReconcileRes struct {
+	*tavernin.AdminReconcileModel
+}
+
 /* ---------------- 存酒台账 ---------------- */
 
 type BottleListReq struct {

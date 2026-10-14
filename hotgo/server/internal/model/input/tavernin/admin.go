@@ -220,6 +220,48 @@ type AdminBottleListInp struct {
 	SourceType int    `json:"sourceType"`
 }
 
+type AdminAbnormalOrderModel struct {
+	Id           int64       `json:"id"`
+	OrderNo      string      `json:"orderNo"`
+	TableName    string      `json:"tableName"`
+	MemberName   string      `json:"memberName"`
+	PayStatus    int         `json:"payStatus"`
+	MakingStatus int         `json:"makingStatus"`
+	RefundStatus int         `json:"refundStatus"`
+	PayAmount    float64     `json:"payAmount"`
+	PayTime      *gtime.Time `json:"payTime"`
+	ExpireAt     *gtime.Time `json:"expireAt"`
+	CreatedAt    *gtime.Time `json:"createdAt"`
+	Issue        string      `json:"issue"`
+}
+
+type AdminReissueInp struct {
+	OrderNo string `json:"orderNo" v:"required#订单号不能为空"`
+}
+
+type AdminReconcileInp struct {
+	Date string `json:"date"`
+}
+
+type AdminReconcileItem struct {
+	OrderNo    string      `json:"orderNo"`
+	PayAmount  float64     `json:"payAmount"`
+	PayChannel string      `json:"payChannel"`
+	PayTime    *gtime.Time `json:"payTime"`
+	HasRecord  bool        `json:"hasRecord"`
+	RecordAmt  float64     `json:"recordAmt"`
+}
+
+type AdminReconcileModel struct {
+	Date            string                `json:"date"`
+	OrderCount      int                   `json:"orderCount"`
+	OrderAmount     float64               `json:"orderAmount"`
+	PayRecordAmount float64               `json:"payRecordAmount"`
+	RefundAmount    float64               `json:"refundAmount"`
+	Diff            float64               `json:"diff"`
+	Items           []*AdminReconcileItem `json:"items"`
+}
+
 type AdminBottleUpdateInp struct {
 	Id          int64   `json:"id" v:"required#存酒ID不能为空"`
 	Status      int     `json:"status"`

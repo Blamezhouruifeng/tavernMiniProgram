@@ -63,6 +63,17 @@ export function OrderList(params) {
   return http.request({ url: '/tavern/order/list', method: 'get', params });
 }
 
+/** 异常订单与对账 */
+export function OrderAbnormal(params) {
+  return http.request({ url: '/tavern/order/abnormal', method: 'get', params });
+}
+export function OrderReissue(params) {
+  return http.request({ url: '/tavern/order/reissue', method: 'POST', params });
+}
+export function Reconcile(params) {
+  return http.request({ url: '/tavern/reconcile/list', method: 'get', params });
+}
+
 /** 存酒台账 */
 export function BottleList(params) {
   return http.request({ url: '/tavern/bottle/list', method: 'get', params });

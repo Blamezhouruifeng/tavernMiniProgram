@@ -2,6 +2,7 @@ package tavern
 
 import (
 	"context"
+	"time"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -58,12 +59,14 @@ func (s *sTavernOrder) ApplyRefund(ctx context.Context, in *tavernin.RefundApply
 		refundAmount += it[itemCols.Amount].Float64()
 	}
 
-	// 是否已进入制作
-	makingRows, _ := dao.TavernOrderItem.Ctx(ctx).
-		Where(itemCols.OrderId, orderId).
-		WhereGT(itemCols.MakerStatus, 0).
-		Count()
-	alreadyMaking := makingRows > 0
+	// 是否还能自助退款：先付制下「支付成功即制作」，因此以支付后的宽限期判定
+	// （Q2 决策：宽限期内可自助原路退，超出后进入员工审核）
+	payAt := order[orderCols.PayTime].GTime()
+	selfService := true // 支付时间缺失时按未制作处理
+	if payAt != nil {
+		selfService = gtime.Now().Timestamp()-payAt.Timestamp() < int64(selfRefundGrace.Seconds())
+	}
+	alreadyMaking := !selfService
 
 	data := g.Map{
 		orderCols.RefundStatus: 1,
@@ -83,6 +86,11 @@ func (s *sTavernOrder) ApplyRefund(ctx context.Context, in *tavernin.RefundApply
 	}
 
 	if !alreadyMaking {
+		// 回滚预占库存（幂等）
+		if rerr := restoreStockByOrder(ctx, orderId); rerr != nil {
+			g.Log().Warningf(ctx, "退款回滚库存失败 orderId:%d err:%+v", orderId, rerr)
+		}
+
 		// 原路退回流水（真实环境调用微信退款接口，此处记录流水用于对账）
 		payCols := dao.TavernOrderPay.Columns()
 		_, _ = dao.TavernOrderPay.Ctx(ctx).Data(g.Map{
@@ -169,6 +177,9 @@ func (s *sTavernOrder) AuditRefund(ctx context.Context, in *tavernin.RefundAudit
 	}
 	return toOrderModel(ctx, updated)
 }
+
+// selfRefundGrace 自助退款宽限期（先付制：支付后在此期间内可自助原路退）
+const selfRefundGrace = 2 * time.Minute
 
 // refundStatusToPayStatus 退款金额 → 支付状态（2 部分退款 / 3 已退款）
 func refundStatusToPayStatus(refundAmount, payAmount float64) int {

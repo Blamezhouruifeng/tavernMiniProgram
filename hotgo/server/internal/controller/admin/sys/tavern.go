@@ -184,3 +184,31 @@ func (c *cTavernAdmin) BottleUpdate(ctx context.Context, req *adminTavern.Bottle
 	err = service.TavernAdmin().BottleUpdate(ctx, &req.AdminBottleUpdateInp)
 	return
 }
+
+/* ---------------- 异常订单与对账 ---------------- */
+
+func (c *cTavernAdmin) OrderAbnormal(ctx context.Context, req *adminTavern.OrderAbnormalReq) (res *adminTavern.OrderAbnormalRes, err error) {
+	list, err := service.TavernAdmin().AbnormalOrders(ctx)
+	if err != nil {
+		return
+	}
+	if list == nil {
+		list = []*tavernin.AdminAbnormalOrderModel{}
+	}
+	res = &adminTavern.OrderAbnormalRes{List: list}
+	return
+}
+
+func (c *cTavernAdmin) OrderReissue(ctx context.Context, req *adminTavern.OrderReissueReq) (res *adminTavern.OrderReissueRes, err error) {
+	err = service.TavernAdmin().Reissue(ctx, &req.AdminReissueInp)
+	return
+}
+
+func (c *cTavernAdmin) Reconcile(ctx context.Context, req *adminTavern.ReconcileReq) (res *adminTavern.ReconcileRes, err error) {
+	view, err := service.TavernAdmin().Reconcile(ctx, &req.AdminReconcileInp)
+	if err != nil {
+		return
+	}
+	res = &adminTavern.ReconcileRes{AdminReconcileModel: view}
+	return
+}
