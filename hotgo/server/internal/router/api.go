@@ -22,6 +22,9 @@ func Api(ctx context.Context, group *ghttp.RouterGroup) {
 		group.Bind(
 			pay.NewV1(), // 支付异步通知
 		)
+
+		// 酒馆小程序端（客人 + 员工共用同一小程序；自带会员鉴权中间件）
+		Tavern(ctx, group)
 		group.Middleware(service.Middleware().ApiAuth)
 		group.Bind(
 			member.NewV1(), // 管理员

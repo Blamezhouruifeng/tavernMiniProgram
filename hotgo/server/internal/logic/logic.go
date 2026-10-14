@@ -11,6 +11,7 @@ import (
 	_ "hotgo/internal/logic/middleware"
 	_ "hotgo/internal/logic/pay"
 	_ "hotgo/internal/logic/sys"
+	_ "hotgo/internal/logic/tavern"
 	_ "hotgo/internal/logic/tcpclient"
 	_ "hotgo/internal/logic/tcpserver"
 	_ "hotgo/internal/logic/view"
