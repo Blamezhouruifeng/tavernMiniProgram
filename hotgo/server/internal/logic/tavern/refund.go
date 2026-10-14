@@ -85,6 +85,11 @@ func (s *sTavernOrder) ApplyRefund(ctx context.Context, in *tavernin.RefundApply
 		return nil, gerror.Wrap(err, "退款申请失败")
 	}
 
+	// 退款时退回优惠券
+	if rerr := service.TavernCoupon().ReturnCoupon(ctx, orderId); rerr != nil {
+		g.Log().Warningf(ctx, "退回优惠券失败 orderId:%d err:%+v", orderId, rerr)
+	}
+
 	if !alreadyMaking {
 		// 回滚预占库存（幂等）
 		if rerr := restoreStockByOrder(ctx, orderId); rerr != nil {

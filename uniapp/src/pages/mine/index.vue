@@ -30,7 +30,7 @@ onLoad(async () => {
 const entries = [
   { icon: 'order', title: '我的订单', desc: '本桌与他人订单', name: 'orderList' },
   { icon: 'gift', title: '我的存酒', desc: '剩余量 · 取酒码', name: 'bottleList' },
-  { icon: 'coupon', title: '优惠券', desc: 'P1 功能占位', name: '' },
+  { icon: 'coupon', title: '优惠券', desc: '新人礼与可用券', name: 'couponList' },
   { icon: 'setting', title: '设置', desc: '手机号绑定 / 注销', name: '' },
 ]
 

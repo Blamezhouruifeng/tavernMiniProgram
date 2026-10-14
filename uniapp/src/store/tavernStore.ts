@@ -103,11 +103,11 @@ export const useTavernStore = defineStore('tavern', {
       await this.refresh()
     },
 
-    /** 提交订单（先付制：下单 → 待支付） */
-    async submit(cartIds: number[], remark?: string) {
+    /** 提交订单（先付制：下单 → 待支付；支持用券抵扣） */
+    async submit(cartIds: number[], couponId = 0, remark?: string) {
       if (!this.session)
         throw new Error('请先扫码开台')
-      const res = await submitOrder({ sessionId: this.session.id, cartIds, remark })
+      const res = await submitOrder({ sessionId: this.session.id, cartIds, couponId, remark })
       this.pendingOrder = res.data
       await this.refresh()
       return res.data

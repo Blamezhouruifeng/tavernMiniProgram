@@ -23,6 +23,7 @@ type TavernOrder struct {
 	TotalAmount      float64     `json:"totalAmount"      orm:"total_amount"      description:"订单总额"`
 	PayAmount        float64     `json:"payAmount"        orm:"pay_amount"        description:"实付金额"`
 	DiscountAmount   float64     `json:"discountAmount"   orm:"discount_amount"   description:"优惠金额"`
+	CouponMemberId   int64       `json:"couponMemberId"   orm:"coupon_member_id"  description:"使用的会员券ID"`
 	PayStatus        int         `json:"payStatus"        orm:"pay_status"        description:"支付状态：0未支付 1已支付 2部分退款 3已退款"`
 	MakingStatus     int         `json:"makingStatus"     orm:"making_status"     description:"制作状态：0未开始 1制作中 2已上齐 3已完成"`
 	RefundStatus     int         `json:"refundStatus"     orm:"refund_status"     description:"退款状态：0无 1申请中 2已通过 3已拒绝 4已退款"`

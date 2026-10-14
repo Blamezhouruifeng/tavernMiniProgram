@@ -251,3 +251,15 @@ func (c *cStaff) StaffBottleVerify(ctx context.Context, req *apiTavern.StaffBott
 	res = &apiTavern.StaffBottleVerifyRes{StaffVerifyBottleModel: verify}
 	return
 }
+
+func (c *cBottle) CouponList(ctx context.Context, req *apiTavern.CouponListReq) (res *apiTavern.CouponListRes, err error) {
+	list, err := service.TavernCoupon().MyList(ctx, &req.CouponListInp)
+	if err != nil {
+		return
+	}
+	if list == nil {
+		list = []*tavernin.CouponModel{}
+	}
+	res = &apiTavern.CouponListRes{List: list}
+	return
+}

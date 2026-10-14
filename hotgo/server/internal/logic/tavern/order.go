@@ -147,6 +147,22 @@ func (s *sTavernOrder) Submit(ctx context.Context, in *tavernin.OrderSubmitInp) 
 
 	// 待支付超时时间（先付制：超时自动取消）
 	expireAt := gtime.New(gtime.Now().Unix() + int64(expireMinutes*60))
+	// 优惠券：先试算，再落库（支付成功时才标记已使用）
+	var discount float64
+	if in.CouponId > 0 {
+		discount, err = service.TavernCoupon().CalcDiscount(ctx, memberId, in.CouponId, total)
+		if err != nil {
+			return nil, err
+		}
+		if discount > total {
+			discount = total
+		}
+	}
+	payAmount := round2(total - discount)
+	if payAmount < 0 {
+		payAmount = 0
+	}
+
 	orderNo := genOrderNo()
 	orderId, err := dao.TavernOrder.Ctx(ctx).Data(g.Map{
 		orderCols.StoreId:          1,
@@ -159,8 +175,9 @@ func (s *sTavernOrder) Submit(ctx context.Context, in *tavernin.OrderSubmitInp) 
 		orderCols.PayerMemberId:    memberId,
 		orderCols.NicknameSnapshot: profile.Nickname,
 		orderCols.TotalAmount:      total,
-		orderCols.PayAmount:        total,
-		orderCols.DiscountAmount:   0,
+		orderCols.PayAmount:        payAmount,
+		orderCols.DiscountAmount:   discount,
+		orderCols.CouponMemberId:   in.CouponId,
 		orderCols.PayStatus:        0,
 		orderCols.MakingStatus:     0,
 		orderCols.RefundStatus:     0,
@@ -293,6 +310,13 @@ func (s *sTavernOrder) Pay(ctx context.Context, in *tavernin.OrderPayInp) (res *
 	_, _ = dao.TavernTableSession.Ctx(ctx).
 		WherePri(row[orderCols.SessionId].Int64()).
 		Increment(sessionCols.TotalPaidAmount, row[orderCols.PayAmount].Float64())
+
+	// 核销优惠券（支付成功才真正使用）
+	if couponMemberId := row[orderCols.CouponMemberId].Int64(); couponMemberId > 0 {
+		if cerr := service.TavernCoupon().UseCoupon(ctx, row[orderCols.MemberId].Int64(), couponMemberId, orderId, row[orderCols.DiscountAmount].Float64()); cerr != nil {
+			g.Log().Warningf(ctx, "核销优惠券失败 orderId:%d err:%+v", orderId, cerr)
+		}
+	}
 
 	// TODO 出票：酒水走吧台、小食走厨房（云打印机 / KDS 推送）
 	// TODO 订阅消息：向客人推送「已下单，正在制作」

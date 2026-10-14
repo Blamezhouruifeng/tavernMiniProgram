@@ -25,6 +25,7 @@ type TavernOrder struct {
 	TotalAmount      any         // 订单总额
 	PayAmount        any         // 实付金额
 	DiscountAmount   any         // 优惠金额
+	CouponMemberId   any         // 使用的会员券ID
 	PayStatus        any         // 支付状态：0未支付 1已支付 2部分退款 3已退款
 	MakingStatus     any         // 制作状态：0未开始 1制作中 2已上齐 3已完成
 	RefundStatus     any         // 退款状态：0无 1申请中 2已通过 3已拒绝 4已退款

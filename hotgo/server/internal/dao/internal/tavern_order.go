@@ -34,6 +34,7 @@ type TavernOrderColumns struct {
 	TotalAmount      string // 订单总额
 	PayAmount        string // 实付金额
 	DiscountAmount   string // 优惠金额
+	CouponMemberId   string // 使用的会员券ID
 	PayStatus        string // 支付状态：0未支付 1已支付 2部分退款 3已退款
 	MakingStatus     string // 制作状态：0未开始 1制作中 2已上齐 3已完成
 	RefundStatus     string // 退款状态：0无 1申请中 2已通过 3已拒绝 4已退款
@@ -66,6 +67,7 @@ var tavernOrderColumns = TavernOrderColumns{
 	TotalAmount:      "total_amount",
 	PayAmount:        "pay_amount",
 	DiscountAmount:   "discount_amount",
+	CouponMemberId:   "coupon_member_id",
 	PayStatus:        "pay_status",
 	MakingStatus:     "making_status",
 	RefundStatus:     "refund_status",

@@ -45,6 +45,14 @@
       }
     },
     {
+      "path": "pages/coupon/list",
+      "type": "page",
+      "name": "couponList",
+      "style": {
+        "navigationBarTitleText": "我的优惠券"
+      }
+    },
+    {
       "path": "pages/menu/index",
       "type": "page",
       "name": "menu",

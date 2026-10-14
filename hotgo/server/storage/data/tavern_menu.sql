@@ -10,3 +10,6 @@ INSERT INTO hg_admin_menu (id, pid, level, tree, title, name, path, icon, type, 
 INSERT INTO hg_admin_menu (id, pid, level, tree, title, name, path, icon, type, redirect, permissions, permission_name, component, always_show, active_menu, is_root, is_frame, keep_alive, hidden, affix, sort, remark, status, created_at, updated_at)
 VALUES (2439, 2432, 2, '2432', '异常订单与对账', 'TavernMonitor', 'monitor', '', 2, '', '', '', '/tavern/monitor/index', 0, '', 0, 0, 1, 0, 0, 70, '支付成功未出票补单、退款待审、订单与流水对账', 1, NOW(), NOW())
 ON DUPLICATE KEY UPDATE title=VALUES(title), component=VALUES(component);
+INSERT INTO hg_admin_menu (id, pid, level, tree, title, name, path, icon, type, redirect, permissions, permission_name, component, always_show, active_menu, is_root, is_frame, keep_alive, hidden, affix, sort, remark, status, created_at, updated_at)
+VALUES (2440, 2432, 2, '2432', '优惠券', 'TavernCoupon', 'coupon', '', 2, '', '', '', '/tavern/coupon/index', 0, '', 0, 0, 1, 0, 0, 80, '新人礼/满减/折扣券与发放', 1, NOW(), NOW())
+ON DUPLICATE KEY UPDATE title=VALUES(title), component=VALUES(component);

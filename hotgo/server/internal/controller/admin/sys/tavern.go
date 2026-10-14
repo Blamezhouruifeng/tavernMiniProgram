@@ -212,3 +212,33 @@ func (c *cTavernAdmin) Reconcile(ctx context.Context, req *adminTavern.Reconcile
 	res = &adminTavern.ReconcileRes{AdminReconcileModel: view}
 	return
 }
+
+/* ---------------- 优惠券 ---------------- */
+
+func (c *cTavernAdmin) CouponList(ctx context.Context, req *adminTavern.CouponListReq) (res *adminTavern.CouponListRes, err error) {
+	list, totalCount, err := service.TavernAdmin().CouponList(ctx, &req.AdminCouponListInp)
+	if err != nil {
+		return
+	}
+	if list == nil {
+		list = []*tavernin.AdminCouponModel{}
+	}
+	res = new(adminTavern.CouponListRes)
+	res.List = list
+	res.PageRes.Pack(req, totalCount)
+	return
+}
+
+func (c *cTavernAdmin) CouponEdit(ctx context.Context, req *adminTavern.CouponEditReq) (res *adminTavern.CouponEditRes, err error) {
+	err = service.TavernAdmin().CouponEdit(ctx, &req.AdminCouponEditInp)
+	return
+}
+
+func (c *cTavernAdmin) CouponGrant(ctx context.Context, req *adminTavern.CouponGrantReq) (res *adminTavern.CouponGrantRes, err error) {
+	count, err := service.TavernAdmin().CouponGrant(ctx, &req.AdminCouponGrantInp)
+	if err != nil {
+		return
+	}
+	res = &adminTavern.CouponGrantRes{Count: count}
+	return
+}

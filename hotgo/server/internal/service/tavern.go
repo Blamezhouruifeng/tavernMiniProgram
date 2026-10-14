@@ -85,6 +85,22 @@ type (
 		DepositFromOrder(ctx context.Context, in *tavernin.DepositFromOrderInp) (res *tavernin.BottleModel, err error)
 	}
 
+	// ITavernCoupon 优惠券（新人礼 / 发放 / 试算 / 核销）
+	ITavernCoupon interface {
+		// MyList 我的优惠券
+		MyList(ctx context.Context, in *tavernin.CouponListInp) (res []*tavernin.CouponModel, err error)
+		// GrantNewcomer 新人礼自动发放
+		GrantNewcomer(ctx context.Context, memberId int64) (err error)
+		// Grant 发放优惠券
+		Grant(ctx context.Context, couponId, memberId int64, source int) (res *tavernin.CouponModel, err error)
+		// CalcDiscount 试算优惠金额
+		CalcDiscount(ctx context.Context, memberId, couponMemberId int64, amount float64) (discount float64, err error)
+		// UseCoupon 标记已使用（支付成功）
+		UseCoupon(ctx context.Context, memberId, couponMemberId, orderId int64, discount float64) (err error)
+		// ReturnCoupon 退款时退回
+		ReturnCoupon(ctx context.Context, orderId int64) (err error)
+	}
+
 	// ITavernAdmin 后台管理（HotGo 后台）
 	ITavernAdmin interface {
 		// StoreView 门店配置详情
@@ -138,6 +154,13 @@ type (
 		Reissue(ctx context.Context, in *tavernin.AdminReissueInp) (err error)
 		// Reconcile 支付对账（订单 ↔ 支付流水）
 		Reconcile(ctx context.Context, in *tavernin.AdminReconcileInp) (res *tavernin.AdminReconcileModel, err error)
+
+		// CouponList 优惠券模板列表
+		CouponList(ctx context.Context, in *tavernin.AdminCouponListInp) (list []*tavernin.AdminCouponModel, totalCount int, err error)
+		// CouponEdit 保存优惠券模板
+		CouponEdit(ctx context.Context, in *tavernin.AdminCouponEditInp) (err error)
+		// CouponGrant 发放优惠券（定向/全员）
+		CouponGrant(ctx context.Context, in *tavernin.AdminCouponGrantInp) (count int, err error)
 	}
 
 	// ITavernStaff 员工工作台
@@ -173,7 +196,17 @@ var (
 	localTavernDeposit ITavernDeposit
 	localTavernStaff   ITavernStaff
 	localTavernAdmin   ITavernAdmin
+	localTavernCoupon  ITavernCoupon
 )
+
+func TavernCoupon() ITavernCoupon {
+	if localTavernCoupon == nil {
+		panic("implement not found for interface ITavernCoupon, forgot register?")
+	}
+	return localTavernCoupon
+}
+
+func RegisterTavernCoupon(i ITavernCoupon) { localTavernCoupon = i }
 
 func TavernAdmin() ITavernAdmin {
 	if localTavernAdmin == nil {

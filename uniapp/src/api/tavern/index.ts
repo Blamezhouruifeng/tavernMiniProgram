@@ -7,6 +7,7 @@ import type {
   ApiRes,
   BottleDeposit,
   Category,
+  Coupon,
   Member,
   Order,
   SessionSnapshot,
@@ -69,7 +70,7 @@ export function removeCart(data: { id: number }) {
 /* ---------------- 订单（先付制） ---------------- */
 
 /** 提交订单 → 返回待支付订单（超时时间由后端下发） */
-export function submitOrder(data: { sessionId: number, cartIds: number[], remark?: string }) {
+export function submitOrder(data: { sessionId: number, cartIds: number[], couponId?: number, remark?: string }) {
   return alovaInstance.Post<ApiRes<Order>>('/tavern/order/submit', data)
 }
 
@@ -147,6 +148,11 @@ export function staffVerifyBottle(data: { code: string, depositId?: number, take
 /** 绑定手机号（存酒取酒凭证的前置条件） */
 export function bindPhone(data: { phone: string }) {
   return alovaInstance.Post<ApiRes<Member>>('/tavern/member/bindPhone', data)
+}
+
+/** 我的优惠券（传入 amount 可判断可用性） */
+export function getCouponList(params: { status?: number, amount?: number } = {}) {
+  return alovaInstance.Get<ApiRes<{ list: Coupon[] }>>('/tavern/coupon/list', { params })
 }
 
 /** 呼叫服务员 / 催单 */

@@ -204,6 +204,26 @@ export interface BottleDeposit {
   expireAt: string
 }
 
+/** 优惠券 */
+export interface Coupon {
+  id: number
+  couponId: number
+  name: string
+  /** 1满减 2折扣 */
+  type: number
+  amount: number
+  minAmount: number
+  discount: number
+  code: string
+  /** 1新人礼 2活动 3后台定向 */
+  source: number
+  /** 1未使用 2已使用 3已过期 */
+  status: number
+  expireAt: string
+  usable: boolean
+  unusableReason: string
+}
+
 /** 取酒码 */
 export interface TakeCode {
   code: string

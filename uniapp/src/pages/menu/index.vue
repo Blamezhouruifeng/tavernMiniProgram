@@ -4,7 +4,8 @@
  * 流程：扫桌码进桌 → 选规格加购 → 与同桌共享可见 → 提交订单 → 支付 → 进入制作
  */
 import type { Category, Goods } from '@/types/tavern'
-import { getMenu } from '@/api/tavern'
+import type { Coupon } from '@/types/tavern'
+import { getCouponList, getMenu } from '@/api/tavern'
 import { useTavernStore } from '@/store/tavernStore'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 
@@ -35,6 +36,47 @@ const currentRemark = ref('')
 /* ---------- 购物车弹层 ---------- */
 const cartVisible = ref(false)
 const cartTab = ref<'mine' | 'table'>('mine')
+
+/* ---------- 优惠券 ---------- */
+const coupons = ref<Coupon[]>([])
+const selectedCouponId = ref(0)
+const couponVisible = ref(false)
+
+const selectedCoupon = computed(() => coupons.value.find(c => c.id === selectedCouponId.value))
+/** 预计优惠金额 */
+const discount = computed(() => {
+  const c = selectedCoupon.value
+  if (!c)
+    return 0
+  if (myCartAmount.value < c.minAmount)
+    return 0
+  if (c.type === 2)
+    return Number((myCartAmount.value * (1 - c.discount)).toFixed(2))
+  return Math.min(c.amount, myCartAmount.value)
+})
+/** 应付金额 */
+const payableAmount = computed(() => Math.max(0, Number((myCartAmount.value - discount.value).toFixed(2))))
+
+async function loadCoupons() {
+  try {
+    const res = await getCouponList({ status: 1, amount: myCartAmount.value })
+    coupons.value = res.data.list
+  }
+  catch {
+    coupons.value = []
+  }
+}
+
+async function openCouponPicker() {
+  selectedCouponId.value = 0
+  await loadCoupons()
+  couponVisible.value = true
+}
+
+function pickCoupon(c: Coupon) {
+  selectedCouponId.value = c.id
+  couponVisible.value = false
+}
 
 /* ---------- 本桌已点弹层 ---------- */
 const orderedVisible = ref(false)
@@ -136,7 +178,7 @@ async function submitMyCart() {
     return
   }
   try {
-    const order = await tavern.submit(tavern.myCart.map(c => c.id))
+    const order = await tavern.submit(tavern.myCart.map(c => c.id), selectedCouponId.value)
     cartVisible.value = false
     router.push({ name: 'orderDetail', query: { orderNo: order.orderNo } })
   }
@@ -384,14 +426,58 @@ function skuLabel(goods: Goods) {
           </template>
         </scroll-view>
 
-        <view class="mt-4 flex items-center justify-between">
+        <view class="mt-3 flex items-center justify-between border-t border-solid border-[var(--wot-color-border)] pt-3" @click="openCouponPicker">
+          <text class="text-3">
+            优惠券
+          </text>
+          <text class="text-3" :class="selectedCoupon ? 'text-[var(--wot-color-danger)]' : 'wot-text-text-auxiliary'">
+            {{ selectedCoupon ? `${selectedCoupon.name} -¥${discount.toFixed(2)}` : `${coupons.length ? coupons.length + ' 张可用' : '暂无可用'} >` }}
+          </text>
+        </view>
+        <view class="mt-3 flex items-center justify-between">
           <text class="text-4 font-bold text-[var(--wot-color-danger)]">
-            我的合计 ¥{{ myCartAmount.toFixed(2) }}
+            应付 ¥{{ payableAmount.toFixed(2) }}
           </text>
           <wd-button type="primary" :disabled="!myCartCount" @click="submitMyCart">
             提交并支付
           </wd-button>
         </view>
+      </wd-popup>
+
+      <!-- 优惠券选择 -->
+      <wd-popup v-model="couponVisible" position="bottom" round custom-style="padding: 16px">
+        <text class="block text-4 font-bold">
+          选择优惠券
+        </text>
+        <text class="mt-1 block text-2.5 wot-text-text-auxiliary">
+          当前购物车 ¥{{ myCartAmount.toFixed(2) }}
+        </text>
+        <scroll-view scroll-y class="mt-3" style="max-height: 45vh">
+          <view v-if="!coupons.length" class="py-6 text-center text-3 wot-text-text-auxiliary">
+            暂无可用优惠券
+          </view>
+          <view
+            v-for="c in coupons" :key="c.id"
+            class="mt-2 flex items-center justify-between rounded-3 p-3"
+            :class="c.usable ? 'bg-white' : 'bg-[var(--wot-color-border-light)]'"
+            @click="c.usable && pickCoupon(c)"
+          >
+            <view>
+              <text class="block text-3 font-bold" :class="c.usable ? 'wot-text-text-main' : 'wot-text-text-auxiliary'">
+                {{ c.name }}
+              </text>
+              <text class="block text-2.5 wot-text-text-auxiliary">
+                满 {{ c.minAmount.toFixed(0) }} 可用 · {{ (c.expireAt || '').slice(0, 10) }} 到期
+              </text>
+            </view>
+            <text class="text-3" :class="c.usable ? 'text-[var(--wot-color-danger)]' : 'wot-text-text-auxiliary'">
+              {{ c.usable ? (c.type === 2 ? (c.discount * 10).toFixed(1) + ' 折' : '-¥' + c.amount.toFixed(0)) : c.unusableReason }}
+            </text>
+          </view>
+        </scroll-view>
+        <wd-button block custom-class="mt-3" @click="selectedCouponId = 0; couponVisible = false">
+          不使用优惠券
+        </wd-button>
       </wd-popup>
 
       <!-- 本桌已点（按菜聚合，可看谁点的） -->

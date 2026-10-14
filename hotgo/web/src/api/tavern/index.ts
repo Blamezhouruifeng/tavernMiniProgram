@@ -74,6 +74,17 @@ export function Reconcile(params) {
   return http.request({ url: '/tavern/reconcile/list', method: 'get', params });
 }
 
+/** 优惠券 */
+export function CouponList(params) {
+  return http.request({ url: '/tavern/coupon/list', method: 'get', params });
+}
+export function CouponEdit(params) {
+  return http.request({ url: '/tavern/coupon/edit', method: 'POST', params });
+}
+export function CouponGrant(params) {
+  return http.request({ url: '/tavern/coupon/grant', method: 'POST', params });
+}
+
 /** 存酒台账 */
 export function BottleList(params) {
   return http.request({ url: '/tavern/bottle/list', method: 'get', params });

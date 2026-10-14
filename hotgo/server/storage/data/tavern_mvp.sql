@@ -432,3 +432,59 @@ ALTER TABLE `hg_tavern_order`
   ADD COLUMN `refund_reason` varchar(255) NOT NULL DEFAULT '' COMMENT '退款原因' AFTER `refund_amount`,
   ADD COLUMN `refund_at` datetime DEFAULT NULL COMMENT '退款时间' AFTER `refund_reason`,
   ADD COLUMN `refund_audit_by` bigint(20) NOT NULL DEFAULT 0 COMMENT '退款审核人' AFTER `refund_at`;
+-- ============================================================
+-- 酒馆小程序：优惠券（新人礼 / 复购 / 定向发放）
+-- ============================================================
+DROP TABLE IF EXISTS `hg_tavern_coupon`;
+CREATE TABLE `hg_tavern_coupon` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `store_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '门店ID',
+  `name` varchar(64) NOT NULL DEFAULT '' COMMENT '券名称',
+  `type` tinyint(1) NOT NULL DEFAULT 1 COMMENT '类型：1满减 2折扣',
+  `amount` decimal(10,2) NOT NULL DEFAULT 0.00 COMMENT '满减金额',
+  `min_amount` decimal(10,2) NOT NULL DEFAULT 0.00 COMMENT '使用门槛（订单满多少可用）',
+  `discount` decimal(4,2) NOT NULL DEFAULT 0.00 COMMENT '折扣（如 0.88 表示八八折）',
+  `valid_days` int(11) NOT NULL DEFAULT 30 COMMENT '领取后有效天数',
+  `total_limit` int(11) NOT NULL DEFAULT -1 COMMENT '发放总量，-1不限',
+  `per_member_limit` int(11) NOT NULL DEFAULT 1 COMMENT '每人限领',
+  `is_newcomer` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否新人礼（注册自动发放）',
+  `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '状态：1启用 2停用',
+  `sort` int(11) NOT NULL DEFAULT 0 COMMENT '排序',
+  `remark` varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
+  `created_at` datetime DEFAULT NULL COMMENT '创建时间',
+  `updated_at` datetime DEFAULT NULL COMMENT '更新时间',
+  `deleted_at` datetime DEFAULT NULL COMMENT '删除时间',
+  `created_by` bigint(20) NOT NULL DEFAULT 0 COMMENT '创建者',
+  `updated_by` bigint(20) NOT NULL DEFAULT 0 COMMENT '更新者',
+  PRIMARY KEY (`id`),
+  KEY `idx_store_status` (`store_id`,`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='酒馆-优惠券模板';
+
+DROP TABLE IF EXISTS `hg_tavern_coupon_member`;
+CREATE TABLE `hg_tavern_coupon_member` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `store_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '门店ID',
+  `coupon_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '券模板ID',
+  `member_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '会员ID',
+  `code` varchar(32) NOT NULL DEFAULT '' COMMENT '券码',
+  `source` tinyint(1) NOT NULL DEFAULT 1 COMMENT '来源：1新人礼 2活动发放 3后台定向',
+  `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '状态：1未使用 2已使用 3已过期',
+  `order_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '使用的订单ID',
+  `amount` decimal(10,2) NOT NULL DEFAULT 0.00 COMMENT '抵扣金额快照',
+  `expire_at` datetime DEFAULT NULL COMMENT '过期时间',
+  `used_at` datetime DEFAULT NULL COMMENT '使用时间',
+  `created_at` datetime DEFAULT NULL COMMENT '创建时间',
+  `updated_at` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_code` (`code`),
+  KEY `idx_member_status` (`member_id`,`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='酒馆-会员优惠券';
+
+-- 新人礼示例券（进店注册自动发放）
+INSERT INTO hg_tavern_coupon (id, store_id, name, type, amount, min_amount, discount, valid_days, total_limit, per_member_limit, is_newcomer, status, sort, remark, created_at, updated_at)
+VALUES (1, 1, '新人首单礼', 1, 20.00, 100.00, 0, 30, -1, 1, 1, 1, 1, '订单满 100 减 20', NOW(), NOW()),
+       (2, 1, '复购券（满 200 减 30）', 1, 30.00, 200.00, 0, 15, -1, 2, 0, 1, 2, '后台/活动发放', NOW(), NOW());
+
+-- 追加：订单使用的会员券
+ALTER TABLE `hg_tavern_order`
+  ADD COLUMN `coupon_member_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '使用的会员券ID' AFTER `discount_amount`;

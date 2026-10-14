@@ -77,6 +77,11 @@ func (s *sTavernMember) Login(ctx context.Context, in *tavernin.MemberLoginInp) 
 		if err != nil {
 			return nil, gerror.Wrap(err, "创建会员失败")
 		}
+
+		// 新人首单礼：注册即自动发放（失败不影响登录）
+		if gerr := service.TavernCoupon().GrantNewcomer(ctx, memberId); gerr != nil {
+			g.Log().Warningf(ctx, "发放新人礼失败 memberId:%d err:%+v", memberId, gerr)
+		}
 	} else {
 		var m *entity.TavernMember
 		if err = member.Struct(&m); err != nil {

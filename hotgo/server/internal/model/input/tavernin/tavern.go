@@ -158,7 +158,9 @@ type CartItemModel struct {
 type OrderSubmitInp struct {
 	SessionId int64   `json:"sessionId" v:"required#会话ID不能为空"`
 	CartIds   []int64 `json:"cartIds" v:"required#请选择要下单的商品"`
-	Remark    string  `json:"remark"`
+	// CouponId 会员券ID（hg_tavern_coupon_member.id），0 表示不用券
+	CouponId int64  `json:"couponId"`
+	Remark   string `json:"remark"`
 }
 
 type OrderPayInp struct {
