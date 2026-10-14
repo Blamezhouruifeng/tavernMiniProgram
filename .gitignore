@@ -1,0 +1,29 @@
+# ---- 操作系统 / 编辑器 ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ---- Node / 前端构建产物 ----
+node_modules/
+dist/
+.output/
+unpackage/
+*.log
+
+# ---- HotGo 后端运行时产物（server/.gitignore 已有，此处兜底）----
+hotgo/server/logs/
+hotgo/server/temp/
+hotgo/server/storage/cache/
+hotgo/server/storage/diskqueue/
+hotgo/server/storage/cert/pay/
+hotgo/server/storage/cert/ssl/
+hotgo/server/resource/public/admin/
+hotgo/server/resource/public/attachment/
+
+# ---- Go 编译产物 ----
+hotgo/server/main
+hotgo/server/*.exe
+hotgo/server/bin/
